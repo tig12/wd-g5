@@ -1,0 +1,5 @@
+
+# Path to the local sqlite database
+sqlite: var/tmp/wd-g5.sqlite3
+
+g5-config-path: /path/to/g5/config.yml
