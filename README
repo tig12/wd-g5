@@ -1,3 +1,19 @@
-Small project to connect g5 database (published on https://opengauquelin.org) with wikidata, using chatGPT API.
+Small project to connect g5 database (published on https://opengauquelin.org) with wikidata, using https://github.com/freearhey/wikidata.
+
+Auxiliary project of https://github.com/tig12/g5
+
+Install:
+
+cp config.yml.dist config.yml
+# and adapt the values
+
+composer require freearhey/wikidata
+
+Usage:
+
+php run-wd-g5.php
+
+And follow the instructions
+
 
 Repository created by Thierry Graff on 2025-04-14

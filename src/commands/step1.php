@@ -26,10 +26,16 @@ class step1 {
     
     public static function execute(): void {
         
+        $a = readline('This will delete existing sqlite database. Are you sure ? (y/N) '); 
+        if(strtolower(trim($a)) != 'y'){
+            echo "OK, prgram ends, nothing was modified.\n";
+            return;
+        }
+        
         self::initializeSqlite();
         self::$db5_conn = DB5::getConnection();
         
-        $stmt = self::$db5_conn->prepare('select slug,name,sex,birth,occus from person limit 5');
+        $stmt = self::$db5_conn->prepare('select slug,name,sex,birth,occus from person limit 3');
         $stmt->execute();
         $g5_res = $stmt->fetchAll(\PDO::FETCH_ASSOC);
         
@@ -58,28 +64,20 @@ class step1 {
         
         $sqlite_path = Config::$data['sqlite-path'];
         
-        if(!is_file($sqlite_path)) {
-            self::createSqliteDatabase($sqlite_path);
-        }
-        else {
-            self::$sqlite_conn = Sqlite::getConnection($sqlite_path);
-        }
-    }
-    
-    public static function createSqliteDatabase(string $sqlite_path): void {
-        
         $dir = dirname($sqlite_path);
         if(!is_dir($dir)) {
             echo "Creating directory $dir\n";
             mkdir($dir, 0777, true);
         }
         
-        echo "Creating local sqlite database $sqlite_path\n";
-        self::$sqlite_conn = Sqlite::getConnection($sqlite_path);
-        self::$sqlite_conn->exec('drop table if exists wd_g5');
+        if(is_file($sqlite_path)){
+            unlink($sqlite_path);
+        }
+        
+        self::$sqlite_conn = Sqlite::getConnection();
         $sql = file_get_contents(dirname(dirname(__FILE__)) . DS . 'model' . DS . 'database.sql');
         self::$sqlite_conn->exec($sql);
+        echo "Local sqlite database $sqlite_path was initialized.\n";
     }
-    
     
 } // end class

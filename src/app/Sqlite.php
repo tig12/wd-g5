@@ -10,12 +10,15 @@ declare(strict_types=1);
 
 namespace wdg5\app;
 
+use wdg5\app\Config;
+
 class Sqlite {
     
     /** 
         @throws \PDOException
     **/
-    public static function getConnection(string $path): ?\PDO {
+    public static function getConnection(): ?\PDO {
+        $path = Config::$data['sqlite-path'];
         $dir = dirname($path);
         if(!is_dir($dir)) {
             echo "Creating directory $dir\n";
