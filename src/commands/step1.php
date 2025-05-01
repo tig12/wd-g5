@@ -35,7 +35,7 @@ class step1 {
         self::initializeSqlite();
         self::$db5_conn = DB5::getConnection();
         
-        $stmt = self::$db5_conn->prepare('select slug,name,sex,birth,occus from person limit 3');
+        $stmt = self::$db5_conn->prepare('select slug,name,sex,birth,occus from person');
         $stmt->execute();
         $g5_res = $stmt->fetchAll(\PDO::FETCH_ASSOC);
         
@@ -43,6 +43,7 @@ class step1 {
             'insert into wd_g5(g5_slug, g5_name, g5_sex, g5_birth, g5_occus) values(?, ?, ?, ?, ?)'
         );
         
+        echo "Fill sqlite with g5 data...\n";
         foreach($g5_res as $row) {
             $sqlite_insert->execute([
                 $row['slug'],
@@ -52,7 +53,7 @@ class step1 {
                 $row['occus'],
             ]);
         }
-        
+        echo "Done\n";
         
     }
     
@@ -77,7 +78,7 @@ class step1 {
         self::$sqlite_conn = Sqlite::getConnection();
         $sql = file_get_contents(dirname(dirname(__FILE__)) . DS . 'model' . DS . 'database.sql');
         self::$sqlite_conn->exec($sql);
-        echo "Local sqlite database $sqlite_path was initialized.\n";
+        echo "Local sqlite database $sqlite_path initialized.\n";
     }
     
 } // end class

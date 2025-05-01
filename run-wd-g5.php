@@ -28,13 +28,14 @@ try{
         . "<step> can be:\n"
         . "    1 - Build sqlite database with g5 data to match.\n"
         . "    2 - Retrieve data from wikidata and store them in local sqlite database.\n"
+        . "    3 - Analyze contents of local sqlite database\n";
         ;
     
     if($argc != 2) {
         die("ERROR - This script requires exacltly one parameter.\n" . $usage);
     }
     
-    $possibleSteps = [1, 2];
+    $possibleSteps = [1, 2, 3];
     $step = $argv[1];
     if(!in_array($step, $possibleSteps)){
         die("ERROR - Invalid value for parameter: $step.\n" . $usage);

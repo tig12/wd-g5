@@ -10,7 +10,7 @@
 // autoloads for vendor code
 $rootdir = dirname(dirname(__DIR__));
 require_once implode(DS, [$rootdir, 'vendor', 'autoload.php']);
-// require_once implode(DS, [$rootdir, 'vendor', 'tig12', 'tiglib', 'autoload.php']);
+require_once implode(DS, [$rootdir, 'vendor', 'tig12', 'tiglib', 'autoload.php']);
 
 /** 
     Autoload for wdg5 namespace

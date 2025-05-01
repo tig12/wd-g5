@@ -17,6 +17,7 @@ namespace wdg5\commands;
 
 use wdg5\app\Sqlite;
 use Wikidata\Wikidata;
+use tiglib\misc\dosleep;
 
 class step2 {
     
@@ -32,26 +33,26 @@ class step2 {
         $sql_update = self::$sqlite_conn->prepare('update wd_g5 set wd_data=?, is_wd_stored=1 where g5_slug=?');
         
         foreach (self::$sqlite_conn->query('select * from wd_g5 where is_wd_stored = 0', \PDO::FETCH_ASSOC) as $row){
+            
             $slug = $row['g5_slug'];
-            echo "Processing $slug\n";
+            echo "Processing $slug {$row['g5_occus']}";
+            
             $search_term = self::computeSearchTerm(json_decode($row['g5_name'], true));
-// echo "\n"; print_r(json_decode($row['g5_name'], true)); echo "\n";
-// echo "search_term = $search_term\n";
-            $wd_search_results = $wikidata->search($search_term);
+            $wd_search_results = $wikidata->search(query:$search_term, limit:5);
+            echo ' => ' . count($wd_search_results) . " candidates\n";
+            
             $wd_get_results = [];
             foreach($wd_search_results as $id => $candidate){
                 echo "    Get $id {$candidate->label} ({$candidate->description})\n";
                 $entity = $wikidata->get($id);
-echo "\n"; print_r($entity->properties->toArray()); echo "\n";
                 $wd_get_results[] = $entity->properties->toArray();
-break;
             }
             $sql_update->execute([
                 json_encode($wd_get_results),
                 $slug,
             ]);
-
-break;
+            
+            dosleep::execute(1);
         }
         
     }
