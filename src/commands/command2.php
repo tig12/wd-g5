@@ -19,7 +19,7 @@ use wdg5\app\Sqlite;
 use Wikidata\Wikidata;
 use tiglib\misc\dosleep;
 
-class step2 {
+class command2 {
     
     /** Local sqlite database, specific to wd-g5 **/
     private static \PDO $sqlite_conn;

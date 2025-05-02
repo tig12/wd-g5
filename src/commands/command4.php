@@ -14,7 +14,7 @@ namespace wdg5\commands;
 
 use wdg5\app\Sqlite;
 
-class step4 {
+class command4 {
     
     
     public const string WD_OCCUPATION_CODE = 'P106';
@@ -23,14 +23,14 @@ class step4 {
     private static \PDO $sqlite_conn;
     
     /** 
-        Computes the list of properties found in the data re
+        Computes the list of properties found in the data retrieved from wikidata.
     **/
     public static function execute(): void {
         
         self::$sqlite_conn = Sqlite::getConnection();
         
         $res = [];
-        foreach (self::$sqlite_conn->query('select wd_data from wd_g5 where is_wd_stored = 1 limit 2', \PDO::FETCH_ASSOC) as $row){
+        foreach (self::$sqlite_conn->query('select wd_data from wd_g5 where is_wd_stored = 1', \PDO::FETCH_ASSOC) as $row){
             $data_wd = json_decode($row['wd_data'], true);
             foreach($data_wd as $candidate){
                 if(!isset($candidate['P106'])){
@@ -44,8 +44,6 @@ class step4 {
         }
         asort($res);
         echo json_encode($res, JSON_PRETTY_PRINT) . "\n";
-//echo "\n"; print_r($res); echo "\n";
-//echo count($res) . "\n";
     }
     
 } // end class

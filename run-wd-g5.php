@@ -19,52 +19,34 @@ define('DS', DIRECTORY_SEPARATOR);
 
 require_once __DIR__ . DS . implode(DS, ['src', 'app' , 'init.php']);
 
-use wdg5\commands\step1;
-use wdg5\commands\step2;
-
 try{
     
-    $usage = "USAGE: php {$argv[0]} <step>\n"
-        . "<step> can be:\n"
+    // check
+    
+    $usage = "USAGE: php {$argv[0]} <command>\n"
+        . "<command> can be:\n"
         . "    1 - Build sqlite database with g5 data to match.\n"
         . "    2 - Retrieve data from wikidata and store them in local sqlite database.\n"
         . "    3 - List properties retrieved from wikidata\n"
         . "    4 - List occupations retrieved from wikidata\n"
+        . "    5 - Check if birth times are always set to '00:00:00'\n"
+        . "    6 - Match wikidata to g5\n"
         ;
     
     if($argc != 2) {
         die("ERROR - This script requires exacltly one parameter.\n" . $usage);
     }
     
-    $possibleSteps = [1, 2, 3, 4];
-    $step = $argv[1];
-    if(!in_array($step, $possibleSteps)){
-        die("ERROR - Invalid value for parameter: $step.\n" . $usage);
+    $possibleCommands = [1, 2, 3, 4, 5, 6];
+    $command = $argv[1];
+    if(!in_array($command, $possibleCommands)){
+        die("ERROR - Invalid value for parameter: $command.\n" . $usage);
     }
     
-    //
     // run
-    //
-    $command = 'wdg5\commands\step' . $step;
+    
+    $command = 'wdg5\commands\command' . $command;
     $command::execute();    
-    
-    /*
-    $request = [
-        'last-name'     => 'Boussinesq',
-        'given-name'    => 'Valentin Joseph',
-        'birth-date'    => '1842-03-13',
-        'birth-place'   => 'Saint-André-de-Sangonis',
-        'birth-country' => 'FR',
-    ];
-    $request = [
-        'last-name'     => 'Becquerel',
-        'given-name'    => 'Antoine',
-        'birth-date'    => '1852-12-15',
-        'birth-place'   => 'paris',
-        'birth-country' => 'FR',
-    ];
-     */
-    
 }
 catch(Exception $e){
     echo 'Exception : ' . $e->getMessage() . "\n";

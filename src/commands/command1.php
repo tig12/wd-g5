@@ -16,7 +16,7 @@ use wdg5\app\Sqlite;
 use wdg5\app\DB5;
 
 
-class step1 {
+class command1 {
     
     /** Local sqlite database, specific to wd-g5 **/
     private static \PDO $sqlite_conn;

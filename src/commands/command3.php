@@ -14,13 +14,13 @@ namespace wdg5\commands;
 
 use wdg5\app\Sqlite;
 
-class step3 {
+class command3 {
     
     /** Local sqlite database, specific to wd-g5 **/
     private static \PDO $sqlite_conn;
     
     /** 
-        Computes the list of properties found in the data re
+        Computes the list of properties found in the data retrieved from wikidata.
     **/
     public static function execute(): void {
         
@@ -37,8 +37,6 @@ class step3 {
         }
         asort($res);
         echo json_encode($res, JSON_PRETTY_PRINT) . "\n";
-//echo "\n"; print_r($res); echo "\n";
-//echo count($res) . "\n";
     }
     
 } // end class
