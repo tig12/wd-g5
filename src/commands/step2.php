@@ -30,9 +30,15 @@ class step2 {
         
         $wikidata = new Wikidata();
         
-        $sql_update = self::$sqlite_conn->prepare('update wd_g5 set wd_data=?, is_wd_stored=1 where g5_slug=?');
+        $sql_update = self::$sqlite_conn->prepare('
+            update wd_g5 set
+                wd_data=?,
+                wd_data_count=?,
+                is_wd_stored=1
+            where g5_slug=?
+        ');
         
-        foreach (self::$sqlite_conn->query('select * from wd_g5 where is_wd_stored = 0', \PDO::FETCH_ASSOC) as $row){
+        foreach (self::$sqlite_conn->query("select * from wd_g5 where is_wd_stored = 0 and g5_slug not like 'gauquelin-a%'", \PDO::FETCH_ASSOC) as $row){
             
             $slug = $row['g5_slug'];
             echo "Processing $slug {$row['g5_occus']}";
@@ -42,17 +48,18 @@ class step2 {
             echo ' => ' . count($wd_search_results) . " candidates\n";
             
             $wd_get_results = [];
-            foreach($wd_search_results as $id => $candidate){
-                echo "    Get $id {$candidate->label} ({$candidate->description})\n";
-                $entity = $wikidata->get($id);
-                $wd_get_results[] = $entity->properties->toArray();
+            foreach($wd_search_results as $wd_id => $candidate){
+                echo "    Get $wd_id {$candidate->label} ({$candidate->description})\n";
+                $entity = $wikidata->get($wd_id);
+                $wd_get_results[$wd_id] = $entity->properties->toArray();
             }
             $sql_update->execute([
                 json_encode($wd_get_results),
+                count($wd_get_results),
                 $slug,
             ]);
             
-            dosleep::execute(1);
+            dosleep::execute(0.5);
         }
         
     }

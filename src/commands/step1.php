@@ -35,15 +35,22 @@ class step1 {
         self::initializeSqlite();
         self::$db5_conn = DB5::getConnection();
         
-        $stmt = self::$db5_conn->prepare('select slug,name,sex,birth,occus from person');
+        $stmt = self::$db5_conn->prepare('select slug, name, sex, birth, occus from person');
         $stmt->execute();
         $g5_res = $stmt->fetchAll(\PDO::FETCH_ASSOC);
         
-        $sqlite_insert = self::$sqlite_conn->prepare(
-            'insert into wd_g5(g5_slug, g5_name, g5_sex, g5_birth, g5_occus) values(?, ?, ?, ?, ?)'
-        );
+        $sqlite_insert = self::$sqlite_conn->prepare('
+            insert into wd_g5(
+                g5_slug,
+                g5_name,
+                g5_sex,
+                g5_birth,
+                g5_occus
+            ) values(?, ?, ?, ?, ?)
+        ');
         
         echo "Fill sqlite with g5 data...\n";
+        $t1 = microtime(true);
         foreach($g5_res as $row) {
             $sqlite_insert->execute([
                 $row['slug'],
@@ -53,7 +60,9 @@ class step1 {
                 $row['occus'],
             ]);
         }
-        echo "Done\n";
+        $t2 = microtime(true);
+        $dt = round($t2 - $t1, 5);
+        echo "Done in $dt s\n";
         
     }
     
@@ -67,7 +76,7 @@ class step1 {
         
         $dir = dirname($sqlite_path);
         if(!is_dir($dir)) {
-            echo "Creating directory $dir\n";
+            echo "Created directory $dir\n";
             mkdir($dir, 0777, true);
         }
         
@@ -78,7 +87,7 @@ class step1 {
         self::$sqlite_conn = Sqlite::getConnection();
         $sql = file_get_contents(dirname(dirname(__FILE__)) . DS . 'model' . DS . 'database.sql');
         self::$sqlite_conn->exec($sql);
-        echo "Local sqlite database $sqlite_path initialized.\n";
+        echo "Initialized local sqlite database $sqlite_path.\n";
     }
     
 } // end class
