@@ -1,6 +1,22 @@
 <?php
 /******************************************************************************
-    
+    Check wikidata properties cardinalities
+    Result : 
+        [P2561] => 3
+        [P1477] => 5
+        [P734] => 4
+        [P735] => 10
+        [P1813] => 2
+        [P1449] => 7
+        [P1448] => 1
+        [P2562] => 3
+        [P569] => 5
+        [P19] => 3
+        [P570] => 5
+        [P20] => 3
+        [P106] => 20
+        [P21] => 3
+
     @license    GPL
     @history    2025-05-02 22:53:07+02:00, Thierry Graff : Creation
 ********************************************************************************/
@@ -10,28 +26,9 @@ declare(strict_types=1);
 namespace wdg5\commands;
 
 use wdg5\app\Sqlite;
+use wdg5\model\Wikidata;
 
 class command6 {
-    
-    public const array WD_USEFUL_FIELDS = [
-        'P2561' => 'name',
-        'P1477' => 'birth name',
-        'P734'  => 'family name',
-        'P735'  => 'given name',
-        'P1813' => 'short name',
-        'P1449' => 'nickname',
-        'P1448' => 'official name',
-        //
-        'P569'  => 'date of birth',
-        'P19'   => 'place of birth',
-        //
-        'P570'  => 'date of death',
-        'P20'   => 'place of death',
-        //
-        'P106'  => 'occupation',
-        //
-        'P21'   => 'sex or gender',
-    ];
     
     /** Local sqlite database, specific to wd-g5 **/
     private static \PDO $sqlite_conn;
@@ -40,27 +37,34 @@ class command6 {
         
         self::$sqlite_conn = Sqlite::getConnection();
         
-        foreach (self::$sqlite_conn->query('select * from wd_g5 where is_wd_stored = 1 limit 1', \PDO::FETCH_ASSOC) as $row){
-            
-            $g5_person = self::build_g5_person($row);
-            
+        // Contains the max nb of values of properties
+        // initialize to 0 for all properies
+        $res = array_combine(
+            Wikidata::USEFUL_PROPERTIES,
+            array_fill(0, count(Wikidata::USEFUL_PROPERTIES), 0)
+        );
+        foreach (self::$sqlite_conn->query('select * from wd_g5 where is_wd_stored = 1', \PDO::FETCH_ASSOC) as $row){
             $data_wd = json_decode($row['wd_data'], true);
             foreach($data_wd as $id_wd => $candidate){
-                $wd_person = self::build_wd_person();
+                if(!isset($candidate[Wikidata::PROP_INSTANCE_OF])){
+                    continue;
+//echo "\n<pre>"; print_r($candidate); echo "</pre>\n"; exit;                    
+                }
+//echo "\n<pre>"; print_r($candidate[Wikidata::PROP_INSTANCE_OF]); echo "</pre>\n"; exit;
+                if($candidate[Wikidata::PROP_INSTANCE_OF]['values'][0]['id'] != Wikidata::ENTITY_HUMAN){
+                    continue;
+                }
+                foreach($candidate as $propId => $propFields){
+                    if(!in_array($propId, Wikidata::USEFUL_PROPERTIES)){
+                        continue;
+                    }
+                    if(count($propFields['values']) > $res[$propId]) {
+                        $res[$propId] = count($propFields['values']);
+                    }
+                }
             }
         }
+        print_r($res);
     }
-    
-    private static function build_g5_person(array $row): array {
-        $res = [];
-        $res['slug'] = $row['g5_slug'];
-        $res['name'] = json_decode($row['g5_name']);
-        $res['birth'] = json_decode($row['g5_birth']);
-        $res['occus'] = json_decode($row['g5_occus']);
-        $res['sex'] = $row['g5_sex'];
-echo "\n<pre>"; print_r($res); echo "</pre>\n"; exit;
-        return $res;
-    }
-    
     
 } // end class
