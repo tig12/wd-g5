@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace wdg5\commands;
 
+use wdg5\app\Config;
 use wdg5\app\Sqlite;
 
 class command3 {
@@ -24,7 +25,7 @@ class command3 {
     **/
     public static function execute(): void {
         
-        self::$sqlite_conn = Sqlite::getConnection();
+        self::$sqlite_conn = Sqlite::getConnection(Config::$data['sqlite']['wd-g5']);
         
         $res = [];
         foreach (self::$sqlite_conn->query('select wd_data from wd_g5 where is_wd_stored = 1', \PDO::FETCH_ASSOC) as $row){

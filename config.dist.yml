@@ -1,5 +1,10 @@
 
-# Path to the local sqlite database
-sqlite: var/tmp/wd-g5.sqlite3
+# Paths to the local sqlite databases
+sqlite:
+  # database containing the wikidata persons corresponding to g5 database 
+  wd-g5: var/sqlite/wd-g5.sqlite3
+  # database containing the hierarchy of wikidata occupations
+  wd-occus: var/sqlite/wd-occus.sqlite3
 
+# config.yml of local g5 installation
 g5-config-path: /path/to/g5/config.yml

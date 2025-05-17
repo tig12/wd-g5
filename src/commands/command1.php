@@ -68,11 +68,11 @@ class command1 {
     
     private static function initializeSqlite(): void {
         
-        if(!isset(Config::$data['sqlite-path'])){
-            throw new \Exception("MISSING KEY 'sqlite-path' IN CONFIG FILE config.yml.\n");
+        if(!isset(Config::$data['sqlite']['wd-g5'])){
+            throw new \Exception("MISSING KEY ['sqlite']['wd-g5'] IN CONFIG FILE config.yml.\n");
         }
         
-        $sqlite_path = Config::$data['sqlite-path'];
+        $sqlite_path = Config::$data['sqlite']['wd-g5'];
         
         $dir = dirname($sqlite_path);
         if(!is_dir($dir)) {
@@ -84,8 +84,8 @@ class command1 {
             unlink($sqlite_path);
         }
         
-        self::$sqlite_conn = Sqlite::getConnection();
-        $sql = file_get_contents(dirname(dirname(__FILE__)) . DS . 'model' . DS . 'database.sql');
+        self::$sqlite_conn = Sqlite::getConnection($sqlite_path);
+        $sql = file_get_contents(dirname(dirname(__FILE__)) . DS . 'model' . DS . 'wd-g5.sql');
         self::$sqlite_conn->exec($sql);
         echo "Initialized local sqlite database $sqlite_path.\n";
     }

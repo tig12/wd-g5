@@ -12,12 +12,11 @@ declare(strict_types=1);
 
 namespace wdg5\commands;
 
+use wdg5\app\Config;
 use wdg5\app\Sqlite;
+use wdg5\model\wikidata\Property;
 
 class command4 {
-    
-    
-    public const string WD_OCCUPATION_CODE = 'P106';
     
     /** Local sqlite database, specific to wd-g5 **/
     private static \PDO $sqlite_conn;
@@ -27,7 +26,7 @@ class command4 {
     **/
     public static function execute(): void {
         
-        self::$sqlite_conn = Sqlite::getConnection();
+        self::$sqlite_conn = Sqlite::getConnection(Config::$data['sqlite']['wd-g5']);
         
         $res = [];
         foreach (self::$sqlite_conn->query('select wd_data from wd_g5 where is_wd_stored = 1', \PDO::FETCH_ASSOC) as $row){
@@ -36,7 +35,7 @@ class command4 {
                 if(!isset($candidate['P106'])){
                     continue;
                 }
-                $occus =& $candidate[self::WD_OCCUPATION_CODE]['values'];
+                $occus =& $candidate[Property::OCCUPATION]['values'];
                 foreach($occus as $occu){
                     $res[$occu['id']] = $occu['label'];
                 }

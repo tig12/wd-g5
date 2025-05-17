@@ -17,8 +17,7 @@ class Sqlite {
     /** 
         @throws \PDOException
     **/
-    public static function getConnection(): ?\PDO {
-        $path = Config::$data['sqlite-path'];
+    public static function getConnection($path): ?\PDO {
         $dir = dirname($path);
         if(!is_dir($dir)) {
             echo "Creating directory $dir\n";

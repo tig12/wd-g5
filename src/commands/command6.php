@@ -25,8 +25,10 @@ declare(strict_types=1);
 
 namespace wdg5\commands;
 
+use wdg5\app\Config;
 use wdg5\app\Sqlite;
-use wdg5\model\Wikidata;
+use wdg5\model\wikidata\Property;
+use wdg5\model\wikidata\Entity;
 
 class command6 {
     
@@ -35,27 +37,27 @@ class command6 {
     
     public static function execute(): void {
         
-        self::$sqlite_conn = Sqlite::getConnection();
+        self::$sqlite_conn = Sqlite::getConnection(Config::$data['sqlite']['wd-g5']);
         
         // Contains the max nb of values of properties
         // initialize to 0 for all properies
         $res = array_combine(
-            Wikidata::USEFUL_PROPERTIES,
-            array_fill(0, count(Wikidata::USEFUL_PROPERTIES), 0)
+            Property::USEFUL_PROPERTIES,
+            array_fill(0, count(Property::USEFUL_PROPERTIES), 0)
         );
         foreach (self::$sqlite_conn->query('select * from wd_g5 where is_wd_stored = 1', \PDO::FETCH_ASSOC) as $row){
             $data_wd = json_decode($row['wd_data'], true);
             foreach($data_wd as $id_wd => $candidate){
-                if(!isset($candidate[Wikidata::PROP_INSTANCE_OF])){
+                if(!isset($candidate[Property::INSTANCE_OF])){
                     continue;
 //echo "\n<pre>"; print_r($candidate); echo "</pre>\n"; exit;                    
                 }
 //echo "\n<pre>"; print_r($candidate[Wikidata::PROP_INSTANCE_OF]); echo "</pre>\n"; exit;
-                if($candidate[Wikidata::PROP_INSTANCE_OF]['values'][0]['id'] != Wikidata::ENTITY_HUMAN){
+                if($candidate[Property::INSTANCE_OF]['values'][0]['id'] != Entity::HUMAN){
                     continue;
                 }
                 foreach($candidate as $propId => $propFields){
-                    if(!in_array($propId, Wikidata::USEFUL_PROPERTIES)){
+                    if(!in_array($propId, Property::USEFUL_PROPERTIES)){
                         continue;
                     }
                     if(count($propFields['values']) > $res[$propId]) {

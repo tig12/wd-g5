@@ -31,14 +31,15 @@ try{
         . "    4 - List occupations retrieved from wikidata\n"
         . "    5 - Check if birth times are always set to '00:00:00'\n"
         . "    6 - Check wikidata properties cardinalities\n"
-        . "    7 - Match wikidata to g5\n"
+        . "    7 - Build wd occupation subclass hierarchy\n"
+        . "    8 - Match wikidata to g5\n"
         ;
     
     if($argc != 2) {
         die("ERROR - This script requires exacltly one parameter.\n" . $usage);
     }
     
-    $possibleCommands = [1, 2, 3, 4, 5, 6, 7];
+    $possibleCommands = [1, 2, 3, 4, 5, 6, 7, 8];
     $command = $argv[1];
     if(!in_array($command, $possibleCommands)){
         die("ERROR - Invalid value for parameter: $command.\n" . $usage);

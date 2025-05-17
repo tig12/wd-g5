@@ -15,6 +15,7 @@ declare(strict_types=1);
 
 namespace wdg5\commands;
 
+use wdg5\app\Config;
 use wdg5\app\Sqlite;
 use Wikidata\Wikidata;
 use tiglib\misc\dosleep;
@@ -26,7 +27,7 @@ class command2 {
     
     public static function execute(): void {
         
-        self::$sqlite_conn = Sqlite::getConnection();
+        self::$sqlite_conn = Sqlite::getConnection(Config::$data['sqlite']['wd-g5']);
         
         $wikidata = new Wikidata();
         
