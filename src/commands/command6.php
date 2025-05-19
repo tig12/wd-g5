@@ -50,9 +50,7 @@ class command6 {
             foreach($data_wd as $id_wd => $candidate){
                 if(!isset($candidate[Property::INSTANCE_OF])){
                     continue;
-//echo "\n<pre>"; print_r($candidate); echo "</pre>\n"; exit;                    
                 }
-//echo "\n<pre>"; print_r($candidate[Wikidata::PROP_INSTANCE_OF]); echo "</pre>\n"; exit;
                 if($candidate[Property::INSTANCE_OF]['values'][0]['id'] != Entity::HUMAN){
                     continue;
                 }

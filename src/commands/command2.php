@@ -45,7 +45,7 @@ class command2 {
             echo "Processing $slug {$row['g5_occus']}";
             
             $search_term = self::computeSearchTerm(json_decode($row['g5_name'], true));
-            $wd_search_results = $wikidata->search(query:$search_term, limit:5);
+            $wd_search_results = $wikidata->search(query:$search_term, limit:5);            // Here call wkidata
             echo ' => ' . count($wd_search_results) . " candidates\n";
             
             $wd_get_results = [];
