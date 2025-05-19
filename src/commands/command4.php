@@ -32,7 +32,7 @@ class command4 {
         foreach (self::$sqlite_conn->query('select wd_data from wd_g5 where is_wd_stored = 1', \PDO::FETCH_ASSOC) as $row){
             $data_wd = json_decode($row['wd_data'], true);
             foreach($data_wd as $candidate){
-                if(!isset($candidate['P106'])){
+                if(!isset($candidate[Property::OCCUPATION])){
                     continue;
                 }
                 $occus =& $candidate[Property::OCCUPATION]['values'];

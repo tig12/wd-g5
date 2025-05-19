@@ -17,6 +17,8 @@ class Property {
     public const array PROPERTY_NAMES = [
         'P31'       => 'instance of',
         //
+        'P279'      => 'subclass of',
+        //
         'P734'      => 'family name',
         'P735'      => 'given name',
         'P1448'     => 'official name',
@@ -39,6 +41,8 @@ class Property {
     
     public const string INSTANCE_OF                 = 'P31';
     
+    public const string SUBCLASS_OF                 = 'P279';
+    
     public const string FAMILY_NAME                 = 'P734';
     public const string GIVEN_NAME                  = 'P735';
     public const string OFFICIAL_NAME               = 'P1448';
@@ -59,7 +63,7 @@ class Property {
     
     public const string SEX_OR_GENDER               = 'P21';
 
-    /** Properties used in g5 **/
+    /** Properties used in a g5 person **/
     public const array USEFUL_PROPERTIES = [
         self::FAMILY_NAME,
         self::GIVEN_NAME,

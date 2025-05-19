@@ -2,6 +2,7 @@
 /******************************************************************************
     Step 1 of matching opengauquelin database with wikidata:
     Builds a local sqlite database containing opengauquelin data to match.
+    Key sqlite.wd-g5 of config.yml
     
     @license    GPL
     @history    2025-04-27 09:05:34+02:00, Thierry Graff : Creation
@@ -26,7 +27,7 @@ class command1 {
     
     public static function execute(): void {
         
-        $a = readline('This will delete existing sqlite database. Are you sure ? (y/N) '); 
+        $a = readline('This will delete existing wd-g5 sqlite database. Are you sure ? (y/N) '); 
         if(strtolower(trim($a)) != 'y'){
             echo "OK, prgram ends, nothing was modified.\n";
             return;
@@ -63,7 +64,6 @@ class command1 {
         $t2 = microtime(true);
         $dt = round($t2 - $t1, 5);
         echo "Done in $dt s\n";
-        
     }
     
     private static function initializeSqlite(): void {

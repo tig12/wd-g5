@@ -25,21 +25,26 @@ try{
     
     $usage = "USAGE: php {$argv[0]} <command>\n"
         . "<command> can be:\n"
-        . "    1 - Build sqlite database with g5 data to match.\n"
-        . "    2 - Retrieve data from wikidata and store them in local sqlite database.\n"
+        // Retrieve persons
+        . "    1 - Build a sqlite database with g5 data to match.\n"
+        . "    2 - Retrieve data from wikidata and store them in the local sqlite database.\n"
+        // Observe retrieved data
         . "    3 - List properties retrieved from wikidata\n"
         . "    4 - List occupations retrieved from wikidata\n"
         . "    5 - Check if birth times are always set to '00:00:00'\n"
         . "    6 - Check wikidata properties cardinalities\n"
-        . "    7 - Build wd occupation subclass hierarchy\n"
-        . "    8 - Match wikidata to g5\n"
+        // Retrieve occupations
+        . "    7 - Build a sqlite database to contain wd occupation subclass hierarchy\n"
+        . "    8 - Fills the sqlite database containing wd occupation subclass hierarchy\n"
+        // Match wikidata to g5
+        . "    9 - Match wikidata to g5\n"
         ;
     
     if($argc != 2) {
         die("ERROR - This script requires exacltly one parameter.\n" . $usage);
     }
     
-    $possibleCommands = [1, 2, 3, 4, 5, 6, 7, 8];
+    $possibleCommands = [1, 2, 3, 4, 5, 6, 7, 8, 9];
     $command = $argv[1];
     if(!in_array($command, $possibleCommands)){
         die("ERROR - Invalid value for parameter: $command.\n" . $usage);
