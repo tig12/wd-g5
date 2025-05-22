@@ -26,7 +26,7 @@ try{
     $usage = "USAGE: php {$argv[0]} <command>\n"
         . "<command> can be:\n"
         // Retrieve persons
-        . "    1 - Build a sqlite database with g5 data to match.\n"
+        . "    1 - Create wd-g5 sqlite database and initialize it with g5 data to match.\n"
         . "    2 - Retrieve data from wikidata and store them in the local sqlite database.\n"
         // Observe retrieved data
         . "    3 - List properties retrieved from wikidata\n"
@@ -34,7 +34,7 @@ try{
         . "    5 - Check if birth times are always set to '00:00:00'\n"
         . "    6 - Check wikidata properties cardinalities\n"
         // Retrieve occupations
-        . "    7 - Build a sqlite database to contain wd occupation subclass hierarchy\n"
+        . "    7 - Create wd-occus sqlite database and initialize it with occupations from wd-g5 database\n"
         . "    8 - Fills the sqlite database containing wd occupation subclass hierarchy\n"
         // Match wikidata to g5
         . "    9 - Match wikidata to g5\n"
@@ -53,7 +53,7 @@ try{
     // run
     
     $command = 'wdg5\commands\command' . $command;
-    $command::execute();    
+    $command::execute();
 }
 catch(Exception $e){
     echo 'Exception : ' . $e->getMessage() . "\n";

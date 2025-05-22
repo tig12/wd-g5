@@ -29,6 +29,8 @@ class command8 {
     
     private static bool $dump = true;
     
+    private static Wikidata $wikidata;
+    
     public static function execute(): void {
 
         self::$wikidata = new Wikidata();
@@ -45,70 +47,96 @@ class command8 {
     
     private static function computeParents(array $row): void {
         
+        self::dump("=== Processing {$row['wd_id']} : {$row['wd_label']} ===\n");
         
-///////// current dev stopped here /////////////
-        
-        
-        $sqlite_select = $occus_sqlite_conn->prepare('
+        $sqlite_select_occu = self::$occus_sqlite_conn->prepare('
             select * from wd_occus where wd_id = ?
         ');
-        $sqlite_insert = $occus_sqlite_conn->prepare('
+        $sqlite_insert = self::$occus_sqlite_conn->prepare('
             insert into wd_occus(
                 wd_id,
                 wd_label,
-                slug
+                slug,
             ) values(?, ?, ?)
         ');
+        $sqlite_update = self::$occus_sqlite_conn->prepare('
+            update wd_occus set
+                are_parents_computed = 1,
+                wd_parents = ?
+            where wd_id = ?
+        ');
         
-        foreach($g5_occus as $g5_occu_id => $g5_occu_label){
-            self::dump("=== Processing $g5_occu_id : $g5_occu_label ===\n");
-            // check if $id already stored in wd-occus database
-            $sqlite_select->execute([$g5_occu_id]);
-            $tmp = $sqlite_select->fetchAll();
-            if(count($tmp) != 0) {
-                self::dump("    Already stored\n");
-                continue;
+        // Get occupation from wikidata
+        $wd_occu = self::$wikidata->get($row['wd_id']); //             HERE, call to wikidata
+        $properties = $wd_occu->properties->toArray();
+        
+            if(!isset($properties[Property::SUBCLASS_OF])){
+                self::dump("    - No parents (no P279)\n");
+                return;
             }
-            $occu = $wikidata->get($g5_occu_id); //             HERE, call to wikidata
-            $properties = $occu->properties->toArray();
-            
-            if(isset($properties[Property::SUBCLASS_OF])){
-                self::dump("    Parents:\n");
-                $parents_to_store = [];
-                foreach($properties[Property::SUBCLASS_OF]->values as $wd_parent){
-                    $parent_id = $wd_parent->id;
-                    $parent_label = $wd_parent->label;
-                    self::dump("        $parent_id $parent_label\n");
-                    // check if parent is already stored
-                    $sqlite_select->execute([$g5_occu_id]);
-                    $tmp = $sqlite_select->fetchAll();
-                    if(count($tmp) != 0) {
-                        self::dump("            Parent already stored\n");
+            self::dump("    Parents:\n");
+            $parents_to_add = [];        // Parents that will be stored in the wd_parents of current row
+            $parents_to_store = [];     // Prents not already existing in the database
+            $parents_to_process = [];   // parents already stored, but wd_parents not computed yet
+            foreach($properties[Property::SUBCLASS_OF]->values as $wd_parent){
+                $parent_id = $wd_parent->id;
+                $parent_label = $wd_parent->label;
+                $parent_slug = slugify::compute($parent_label);
+                $current_parent = [
+                    'wd_id'     => $parent_id,
+                    'wd_=label' => $parent_label,
+                    'slug'      => $parent_slug,
+                ];
+                $parents_to_add[] = $current_parent;
+                self::dump("        $parent_id $parent_label");
+                // check if parent is already stored
+                $sqlite_select_occu->execute([$row['wd_id']]);
+                $parent = $sqlite_select_occu->fetch(\PDO::FETCH_ASSOC);
+                if($parent !== false) {
+                    self::dump(" - Parent already stored");
+                    if($parent['are_parents_computed'] == 0){
+                        self::dump(" - But not computed yet");
+                        $parents_to_process[] = $current_parent;
+                    }
+                    else {
+                        self::dump("\n");
                         continue;
                     }
-                    $parents_to_store[$parent_id] = $parent_label;
+                    self::dump("\n");
                 }
-                try{
-                    $occus_sqlite_conn->beginTransaction();
-                    foreach($parents_to_store as $id => $label){
-                        $slug = slugify::compute($label);
-echo "$id $label $slug\n";
-                    }
-                    $occus_sqlite_conn->commit();
-                }
-                catch(\Exception $e){
-                    $occus_sqlite_conn->rollback();
+                else {
+                    $parents_to_store[] = $current_parent;
+                    $parents_to_process[] = $current_parent;
+                    self::dump(" - New parent, not already stored\n");
                 }
             }
-            else {
-                self::dump("    No parents (no P279)\n");
+            
+            // $parents_to_add
+            foreach($parents_to_process as $current_parent){
+                dosleep::execute(0.5);
+                self::dump("    Processing {$current_parent['label']} {$current_parent['slug']}\n");
             }
-break;            
-//echo json_encode($properties, JSON_PRETTY_PRINT) . "\n"; exit;
-//echo "\n<pre>"; print_r($properties); echo "</pre>\n"; exit;
-            dosleep::execute(0.5);
-        }
-        
+            
+            // $parents_to_store
+            try{
+                self::$occus_sqlite_conn->beginTransaction();
+                foreach($parents_to_store as $current_parent){
+                    self::dump("    Storing {$current_parent['id']} {$current_parent['label']} {$current_parent['slug']}\n");
+                }
+                self::$occus_sqlite_conn->commit();
+            }
+            catch(\Exception $e){
+                self::$occus_sqlite_conn->rollback();
+                throw($e);
+                exit;
+            }
+            
+            // $parents_to_process
+            foreach($parents_to_process as $current_parent){
+                dosleep::execute(0.5);
+                self::dump("    Processing {$current_parent['label']} {$current_parent['slug']}\n");
+            }
+exit;
     }
     
     private static function dump(string $str): void {
