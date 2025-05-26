@@ -31,112 +31,125 @@ class command8 {
     
     private static Wikidata $wikidata;
     
+    private static \PDOStatement $sql_select;
+    private static \PDOStatement $sql_insert;
+    private static \PDOStatement $sql_update;
+    
+    
     public static function execute(): void {
-
+        
+        self::init();
+        self::computeAllRows();
+    }
+    
+    private static function init(): void {
+    
         self::$wikidata = new Wikidata();
         
         self::$occus_sqlite_conn = Sqlite::getConnection(Config::$data['sqlite']['wd-occus']);
         self::$occus_sqlite_conn->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 
-        // Loop on the rows for which parents haven't been computed
-        foreach(self::$occus_sqlite_conn->query('select * from wd_occus where are_parents_computed=0', \PDO::FETCH_ASSOC) as $row){
-            self::computeParents($row);
-        }
-        
-    }
-    
-    private static function computeParents(array $row): void {
-        
-        self::dump("=== Processing {$row['wd_id']} : {$row['wd_label']} ===\n");
-        
-        $sqlite_select_occu = self::$occus_sqlite_conn->prepare('
+        self::$sql_select = self::$occus_sqlite_conn->prepare('
             select * from wd_occus where wd_id = ?
         ');
-        $sqlite_insert = self::$occus_sqlite_conn->prepare('
+        self::$sql_insert = self::$occus_sqlite_conn->prepare('
             insert into wd_occus(
                 wd_id,
                 wd_label,
-                slug,
+                slug
             ) values(?, ?, ?)
         ');
-        $sqlite_update = self::$occus_sqlite_conn->prepare('
+        self::$sql_update = self::$occus_sqlite_conn->prepare('
             update wd_occus set
                 are_parents_computed = 1,
                 wd_parents = ?
             where wd_id = ?
         ');
         
+    }
+        
+    private static function computeAllRows(): void {
+        try{
+            $tmp = self::$occus_sqlite_conn->query('select count(*) from wd_occus where are_parents_computed=0', \PDO::FETCH_ASSOC);
+            $N = $tmp->fetch(\PDO::FETCH_ASSOC)['count(*)'];
+            self::dump("**************************************************\n");
+            self::dump("N = $N\n");
+            self::dump("**************************************************\n");
+            if($N > 0) {
+                $row = self::$occus_sqlite_conn->query('select * from wd_occus where are_parents_computed=0 limit 1', \PDO::FETCH_ASSOC);
+                self::computeOneRow($row->fetch(\PDO::FETCH_ASSOC));
+                dosleep::execute(0.5);
+                self::computeAllRows();         // HERE recursive
+            }
+        }
+        catch(\Exception){
+            // do nothing, just to bypass xdebug limitation of 512 recursions
+        }
+    }
+    
+    /** 
+        Computes the parents of a single row.
+    **/
+    private static function computeOneRow(array $row): void {
+        
+        self::dump("=== Processing {$row['wd_id']} : {$row['wd_label']} ===\n");
+        
         // Get occupation from wikidata
         $wd_occu = self::$wikidata->get($row['wd_id']); //             HERE, call to wikidata
         $properties = $wd_occu->properties->toArray();
         
-            if(!isset($properties[Property::SUBCLASS_OF])){
-                self::dump("    - No parents (no P279)\n");
-                return;
+        if(!isset($properties[Property::SUBCLASS_OF])){
+            self::dump("    - No parents (no P279)\n");
+            self::$occus_sqlite_conn->query("update wd_occus set are_parents_computed = 1 where wd_id = '{$row['wd_id']}'");
+            return;
+        }
+        self::dump("    Parents:\n");
+        $parents_to_complete = [];  // Parents that will be stored in column wd_parents of current row
+        $new_parents = [];          // Parents not already existing in the database
+        foreach($properties[Property::SUBCLASS_OF]->values as $wd_parent){
+            $parent_id = $wd_parent->id;
+            $parent_label = $wd_parent->label;
+            $parent_slug = slugify::compute($parent_label);
+            $current_parent = [
+                'wd_id'     => $parent_id,
+                'wd_label' => $parent_label,
+                'slug'      => $parent_slug,
+            ];
+            $parents_to_complete[] = $current_parent;
+            self::dump("        $parent_id $parent_label");
+            // check if parent is already stored
+            self::$sql_select->execute([$row['wd_id']]);
+            $parent = self::$sql_select->fetch(\PDO::FETCH_ASSOC);
+            if($parent !== false) {
+                self::dump(" - Parent already stored\n");
             }
-            self::dump("    Parents:\n");
-            $parents_to_add = [];        // Parents that will be stored in the wd_parents of current row
-            $parents_to_store = [];     // Prents not already existing in the database
-            $parents_to_process = [];   // parents already stored, but wd_parents not computed yet
-            foreach($properties[Property::SUBCLASS_OF]->values as $wd_parent){
-                $parent_id = $wd_parent->id;
-                $parent_label = $wd_parent->label;
-                $parent_slug = slugify::compute($parent_label);
-                $current_parent = [
-                    'wd_id'     => $parent_id,
-                    'wd_=label' => $parent_label,
-                    'slug'      => $parent_slug,
-                ];
-                $parents_to_add[] = $current_parent;
-                self::dump("        $parent_id $parent_label");
-                // check if parent is already stored
-                $sqlite_select_occu->execute([$row['wd_id']]);
-                $parent = $sqlite_select_occu->fetch(\PDO::FETCH_ASSOC);
-                if($parent !== false) {
-                    self::dump(" - Parent already stored");
-                    if($parent['are_parents_computed'] == 0){
-                        self::dump(" - But not computed yet");
-                        $parents_to_process[] = $current_parent;
-                    }
-                    else {
-                        self::dump("\n");
-                        continue;
-                    }
-                    self::dump("\n");
-                }
-                else {
-                    $parents_to_store[] = $current_parent;
-                    $parents_to_process[] = $current_parent;
-                    self::dump(" - New parent, not already stored\n");
-                }
+            else {
+                $new_parents[] = $current_parent;
+                self::dump(" - New parent, not already stored\n");
             }
-            
-            // $parents_to_add
-            foreach($parents_to_process as $current_parent){
-                dosleep::execute(0.5);
-                self::dump("    Processing {$current_parent['label']} {$current_parent['slug']}\n");
-            }
-            
-            // $parents_to_store
-            try{
-                self::$occus_sqlite_conn->beginTransaction();
-                foreach($parents_to_store as $current_parent){
-                    self::dump("    Storing {$current_parent['id']} {$current_parent['label']} {$current_parent['slug']}\n");
-                }
-                self::$occus_sqlite_conn->commit();
-            }
-            catch(\Exception $e){
-                self::$occus_sqlite_conn->rollback();
-                throw($e);
-                exit;
-            }
-            
-            // $parents_to_process
-            foreach($parents_to_process as $current_parent){
-                dosleep::execute(0.5);
-                self::dump("    Processing {$current_parent['label']} {$current_parent['slug']}\n");
-            }
-exit;
+        }
+        
+        // $parents_to_complete
+        // in current row, add a json-encoded array of parents' slugs
+        $slugs = [];
+        foreach($parents_to_complete as $parent){
+            $slugs[] = $parent['slug'];
+        }
+        self::dump("    Add parents to current row : " . json_encode($slugs) . "\n");
+        self::$sql_update->execute([
+            json_encode($slugs),
+            $row['wd_id'],
+        ]);
+        
+        // $new_parents
+        foreach($new_parents as $parent){
+            self::dump("    Storing new occupation {$parent['wd_id']} {$parent['slug']}\n");
+            self::$sql_insert->execute([
+                $parent['wd_id'],
+                $parent['wd_label'],
+                $parent['slug'],
+            ]);
+        }
     }
     
     private static function dump(string $str): void {
