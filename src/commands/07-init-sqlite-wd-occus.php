@@ -19,7 +19,7 @@ use wdg5\app\Sqlite;
 use wdg5\model\wikidata\Property;
 use tiglib\strings\slugify;
 
-class command7 {
+class command07 {
     
     /** Connection to wd-occus local sqlite database **/
     private static \PDO $occus_sqlite_conn;

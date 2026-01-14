@@ -5,7 +5,10 @@ config.yml
 2.build
 var
 
-vendor
+# don't version vendor/,
+# but version vendor/tig12
+vendor/*
+!vendor/tig12
 
 
 # files marked for deletion

@@ -22,7 +22,7 @@ use Wikidata\Wikidata;
 use tiglib\misc\dosleep;
 use tiglib\strings\slugify;
 
-class command8 {
+class command08 {
     
     /** Connection to wd-occus local sqlite database **/
     private static \PDO $occus_sqlite_conn;

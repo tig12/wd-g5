@@ -26,25 +26,24 @@ try{
     $usage = "USAGE: php {$argv[0]} <command>\n"
         . "<command> can be:\n"
         // Retrieve persons
-        . "    1 - Create wd-g5 sqlite database and initialize it with g5 data to match.\n"
-        . "    2 - Retrieve data from wikidata and store them in the local sqlite database.\n"
+        . "    01 : Create wd-g5 sqlite database and initialize it with g5 data to match.\n"
+        . "    02 : Retrieve data from wikidata and store them in the local sqlite database.\n"
         // Observe retrieved data
-        . "    3 - List properties retrieved from wikidata\n"
-        . "    4 - List occupations retrieved from wikidata\n"
-        . "    5 - Check if birth times are always set to '00:00:00'\n"
-        . "    6 - Check wikidata properties cardinalities\n"
+        . "    03 : List properties retrieved from wikidata\n"
+        . "    04 : List occupations retrieved from wikidata\n"
+        . "    05 : Check if birth times are always set to '00:00:00'\n"
+        . "    06 : Check wikidata properties cardinalities\n"
         // Retrieve occupations
-        . "    7 - Create wd-occus sqlite database and initialize it with occupations from wd-g5 database\n"
-        . "    8 - Fills the sqlite database containing wd occupation subclass hierarchy\n"
+        . "    07 : Create wd-occus sqlite database and initialize it with occupations from wd-g5 database\n"
+        . "    08 : Fills the sqlite database containing wd occupation subclass hierarchy\n"
         // Match wikidata to g5
-        . "    9 - Match wikidata to g5\n"
+        . "    09 : Match wikidata to g5\n"
         ;
     
     if($argc != 2) {
         die("ERROR - This script requires exacltly one parameter.\n" . $usage);
     }
-    
-    $possibleCommands = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+    $possibleCommands = array_map(fn($n) => sprintf('%02d', $n), range(1, 9)); // ['01', ... ,'09'];
     $command = $argv[1];
     if(!in_array($command, $possibleCommands)){
         die("ERROR - Invalid value for parameter: $command.\n" . $usage);

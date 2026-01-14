@@ -16,18 +16,18 @@ use wdg5\app\Sqlite;
 use wdg5\model\wikidata\Property;
 use wdg5\model\wikidata\Entity;
 
-class command9 {
+class command09 {
     
     /** Local sqlite database, specific to wd-g5 **/
-    private static \PDO $sqlite_conn;
+    private static \PDO $sqlite_wd_g5;
     
     public static function execute(): void {
         
-        self::$sqlite_conn = Sqlite::getConnection(Config::$data['sqlite']['wd-g5']);
+        self::$sqlite_wd_g5 = Sqlite::getConnection(Config::$data['sqlite']['wd-g5']);
 //        $query = 'select * from wd_g5 where is_wd_stored = 1';
 //        $query = 'select * from wd_g5 where is_wd_stored = 1 limit 5';
         $query = "select * from wd_g5 where g5_slug='sommer-raymond-1906-08-31'";
-        foreach (self::$sqlite_conn->query($query, \PDO::FETCH_ASSOC) as $row){
+        foreach (self::$sqlite_wd_g5->query($query, \PDO::FETCH_ASSOC) as $row){
             
             $g5_person = self::build_g5_person($row);
 echo "\n" . substr($g5_person['birth']['date'], 0, 10) . '    ' . $g5_person['slug'] . ' - ' . implode(', ', $g5_person['occus']) . "\n";
@@ -84,7 +84,7 @@ echo "---------------------\n";
     }
     
     /**
-        Try t omatch g5 and wd names.
+        Try to match g5 and wd names.
         The matching takes g5 informations as reference
         @return A match score, between 0 (no match) and 1 (match certain)
     **/

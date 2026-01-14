@@ -1,8 +1,7 @@
 <?php
 /******************************************************************************
     Step 1 of matching opengauquelin database with wikidata:
-    Builds a local sqlite database containing opengauquelin data to match.
-    Key sqlite.wd-g5 of config.yml
+    Initializes a local sqlite database and fills it with opengauquelin data.
     
     @license    GPL
     @history    2025-04-27 09:05:34+02:00, Thierry Graff : Creation
@@ -16,8 +15,7 @@ use wdg5\app\Config;
 use wdg5\app\Sqlite;
 use wdg5\app\DB5;
 
-
-class command1 {
+class command01 {
     
     /** Local sqlite database, specific to wd-g5 **/
     private static \PDO $sqlite_conn;

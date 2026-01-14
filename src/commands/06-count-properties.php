@@ -1,6 +1,7 @@
 <?php
 /******************************************************************************
-    Check wikidata properties cardinalities
+    Lists the maximal number of times a single person of wd-g5 database has
+    a given property, for properties of Property::USEFUL_PROPERTIES.
     Result : 
         [P2561] => 3
         [P1477] => 5
@@ -30,7 +31,7 @@ use wdg5\app\Sqlite;
 use wdg5\model\wikidata\Property;
 use wdg5\model\wikidata\Entity;
 
-class command6 {
+class command06 {
     
     /** Local sqlite database, specific to wd-g5 **/
     private static \PDO $sqlite_conn;

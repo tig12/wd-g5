@@ -1,8 +1,14 @@
-Small project to connect g5 database (published on https://opengauquelin.org) with wikidata, using https://github.com/freearhey/wikidata.
+
+Small project to connect g5 database (published on https://opengauquelin.org) with wikidata,
+using https://github.com/freearhey/wikidata.
 
 Auxiliary project of https://github.com/tig12/g5
 
+Warning : freearhey/wikidata needs php <= 8.4 (breaks on 8.5)
+
 Install:
+
+sudo apt install php8.4-pdo-sqlite
 
 cp config.yml.dist config.yml
 # and adapt the values
@@ -14,6 +20,5 @@ Usage:
 php run-wd-g5.php
 
 And follow the instructions
-
 
 Repository created by Thierry Graff on 2025-04-14

@@ -1,11 +1,10 @@
 <?php
 /******************************************************************************
-    Lists the occupations retrieved from wikidata.
-    
-    Usage to store result: php run-wd-g5.php 4 > /path/to/occupations.json
+    Check if birth times are always set to '00:00:00'
+    (answer = yes)
     
     @license    GPL
-    @history    2025-05-02 19:55:00+02:00, Thierry Graff : Creation
+    @history    2025-05-02 22:38:51+02:00, Thierry Graff : Creation
 ********************************************************************************/
 
 declare(strict_types=1);
@@ -16,33 +15,31 @@ use wdg5\app\Config;
 use wdg5\app\Sqlite;
 use wdg5\model\wikidata\Property;
 
-class command4 {
+class command05 {
     
     /** Local sqlite database, specific to wd-g5 **/
     private static \PDO $sqlite_conn;
     
-    /** 
-        Computes the list of properties found in the data retrieved from wikidata.
-    **/
     public static function execute(): void {
         
         self::$sqlite_conn = Sqlite::getConnection(Config::$data['sqlite']['wd-g5']);
         
-        $res = [];
-        foreach (self::$sqlite_conn->query('select wd_data from wd_g5 where is_wd_stored = 1', \PDO::FETCH_ASSOC) as $row){
+        foreach (self::$sqlite_conn->query('select g5_slug, wd_data from wd_g5 where is_wd_stored = 1', \PDO::FETCH_ASSOC) as $row){
             $data_wd = json_decode($row['wd_data'], true);
             foreach($data_wd as $candidate){
-                if(!isset($candidate[Property::OCCUPATION])){
+                if(!isset($candidate[Property::DATE_OF_BIRTH])){
                     continue;
                 }
-                $occus =& $candidate[Property::OCCUPATION]['values'];
-                foreach($occus as $occu){
-                    $res[$occu['id']] = $occu['label'];
+                $dates =& $candidate[Property::DATE_OF_BIRTH]['values'];
+                foreach($dates as $date){
+                    $hour = substr($date['id'], 11, 8);
+                    if($hour != '00:00:00' && $hour != 'wikidata'){
+                        echo "{$row['g5_slug']} $hour\n";
+                    }
                 }
             }
         }
-        asort($res);
-        echo json_encode($res, JSON_PRETTY_PRINT) . "\n";
+        echo "done (no display = no hour != '00:00:00' in wikidata persons)\n";
     }
     
 } // end class
