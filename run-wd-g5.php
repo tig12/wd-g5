@@ -37,7 +37,7 @@ try{
         . "    07 : Create wd-occus sqlite database and initialize it with occupations from wd-g5 database\n"
         . "    08 : Fills the sqlite database containing wd occupation subclass hierarchy\n"
         // Match wikidata to g5
-        . "    09 : Match wikidata to g5\n"
+        . "    09 : Match wikidata to g5. Generates a file for check in var/tmp/check-match.csv\n"
         ;
     
     if($argc != 2) {
